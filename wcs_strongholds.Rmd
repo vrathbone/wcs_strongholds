@@ -1,0 +1,22 @@
+---
+title: "WCS Strongholds"
+author: "Vanessa Rathbone"
+date: "10/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(sf)
+library(here)
+
+```
+
+```{r}
+
+strongholds <- st_read(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp"))
+
+
+```
