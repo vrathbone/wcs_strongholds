@@ -16,4 +16,8 @@ library(here)
 
 ```{r}
 
+strongholds <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp"))
+
+www <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "WWW_edit_arc_20210914.shp"))
+
 ```
