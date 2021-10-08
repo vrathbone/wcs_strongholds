@@ -8,16 +8,51 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(raster)
 library(tidyverse)
 library(sf)
 library(here)
+library(janitor)
+
 
 ```
 
 ```{r}
 
-strongholds <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp"))
+#Read in and tidy up the data
 
-www <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "WWW_edit_arc_20210914.shp"))
+strongholds <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp")) %>%
+  clean_names() %>% 
+  as.data.frame()
+
+st_crs(strongholds)
+  
+www <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "WWW_edit_arc_20210914.shp")) %>% 
+  clean_names()
+
+st_crs(www)
+
+continents <- read_sf(here("continents", "4a7d27e1-84a3-4d6a-b4c2-6b6919f3cf4b202034-1-2zg7ul.ht5ut.shp")) %>% 
+  clean_names()
+
+st_crs(continents)
+
 
 ```
+
+Area
+```{r}
+
+#total area
+
+#WWW - green polygons
+www_area <- raster::area(www)
+
+
+#www in strongholds (1 = yes, 0 = no)
+
+#Strongholds
+
+
+```
+
