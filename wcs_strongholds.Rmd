@@ -21,14 +21,15 @@ library(janitor)
 
 #Read in and tidy up the data
 
-strongholds <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp")) %>%
-  clean_names() %>% 
-  as.data.frame()
+strongholds <- st_read(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp")) %>%
+  clean_names()
 
 st_crs(strongholds)
   
 www <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "WWW_edit_arc_20210914.shp")) %>% 
-  clean_names()
+  clean_names() %>% 
+  as.data.frame()
+
 
 st_crs(www)
 
@@ -48,11 +49,50 @@ Area
 #WWW - green polygons
 www_area <- raster::area(www)
 
+ww_area <- www %>% 
+  group_by(region) %>% 
+  summarise(sum_area = sum(shape_area))
 
 #www in strongholds (1 = yes, 0 = no)
 
 #Strongholds
+strongholds$area_km2 <- area(strongholds)
 
+#% of area of the globe
+
+###########
+
+#terrestrial area
+
+#%of total terrestrial area
+
+##########
+
+#marine area
+
+#%of total marine area
+
+
+
+```
+
+Biodiversity
+```{r}
+
+#number of Threatened Species
+
+#IUCN Red List Species Category by animal category by # and by % of global total
+
+#Marine species represented
+
+############
+
+#Cats and dogs
+
+# total number of species
+# total number of threatened species
+# total number of threatened species distribution
+# total number of threatened species population
 
 ```
 
