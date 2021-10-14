@@ -13,6 +13,7 @@ library(tidyverse)
 library(sf)
 library(here)
 library(janitor)
+library(fasterize)
 
 
 ```
@@ -20,23 +21,49 @@ library(janitor)
 ```{r}
 
 #Read in and tidy up the data
-
-strongholds <- st_read(here("STRONGHOLDS_v1_v2_WWW", "STHOLDS_V2_edit_arc_20210914.shp")) %>%
-  clean_names()
-
-st_crs(strongholds)
-  
-www <- read_sf(here("STRONGHOLDS_v1_v2_WWW", "WWW_edit_arc_20210914.shp")) %>% 
-  clean_names() %>% 
-  as.data.frame()
-
-
-st_crs(www)
-
 continents <- read_sf(here("continents", "4a7d27e1-84a3-4d6a-b4c2-6b6919f3cf4b202034-1-2zg7ul.ht5ut.shp")) %>% 
   clean_names()
 
 st_crs(continents)
+
+plot(continents)
+
+#strongholds
+strongholds <- read_sf(here("strongholds", "STHOLDS_intersect.shp")) %>%
+  clean_names() 
+
+st_crs(strongholds)
+
+strong_rast <- raster(extent(strongholds))
+values(strong_rast) <- 1:ncell(strong_rast)
+strong_rast <-mask(strong_rast, continents)
+
+plot(strong_rast)
+
+strong_df <- strong_rast %>%
+  as.data.frame()
+
+#where we work
+www <- st_read(here("www", "WWW_intersect.shp")) %>% 
+  clean_names() %>% 
+  st_transform(., crs = st_crs(continents)) #change to correct crs
+
+st_crs(www)
+
+www_rast <- raster(extent(www))
+values(www_rast) <- 1:ncell(www_rast)
+www_rast <-mask(www_rast, continents)
+
+plot(www_rast)
+
+
+
+
+```
+
+Rasterize sf files
+```{r}
+
 
 
 ```
@@ -44,21 +71,31 @@ st_crs(continents)
 Area
 ```{r}
 
+  mutate(area = st_area(geometry)) 
+  X %>% mutate(area = st_area(geometry))
+
 #total area
 
-#WWW - green polygons
-www_area <- raster::area(www)
-
-ww_area <- www %>% 
-  group_by(region) %>% 
-  summarise(sum_area = sum(shape_area))
-
-#www in strongholds (1 = yes, 0 = no)
-
 #Strongholds
-strongholds$area_km2 <- area(strongholds)
+# strong_area <- strongholds %>% 
+#   group_by(region) %>% 
+#   summarise(sum_area_k2 = sum(shape_area^2))
+
+strong_area <- strongholds %>% 
+  group_by(continent) %>% 
+  summarise(sum_area_k2 = sum(sqkm))
 
 #% of area of the globe
+
+#WWW - green polygons
+# www_area <- www %>% 
+#   group_by(region) %>% 
+#   summarise(sum_area_k2 = sum(shape_area^2)) %>% 
+#   mutate(percent = www_area$sum_area_k2/
+
+www_area <- www %>% 
+  group_by(continent) %>% 
+  summarise(sum_area_k2 = sum(sqkm))
 
 ###########
 
