@@ -14,13 +14,14 @@ library(sf)
 library(here)
 library(janitor)
 library(fasterize)
+library(lwgeom)
 
 
 ```
 
 ```{r}
 
-#Read in and tidy up the data
+#Read in, tidy up the data and convert to rasters
 continents <- read_sf(here("continents", "4a7d27e1-84a3-4d6a-b4c2-6b6919f3cf4b202034-1-2zg7ul.ht5ut.shp")) %>% 
   clean_names()
 
@@ -30,21 +31,24 @@ plot(continents)
 
 #strongholds
 strongholds <- read_sf(here("strongholds", "STHOLDS_intersect.shp")) %>%
-  clean_names() 
+  clean_names()
+
+# strongholds$geometry %>% 
+#   s2::s2_rebuild()
 
 st_crs(strongholds)
 
-strong_rast <- raster(extent(strongholds))
-values(strong_rast) <- 1:ncell(strong_rast)
-strong_rast <-mask(strong_rast, continents)
+# sf::sf_use_s2(FALSE)
+
+strong_rast <- raster(extent(strongholds)) #convert to raster
+values(strong_rast) <- 1:ncell(strong_rast) #add cell values
+strong_rast <-mask(strong_rast, continents) #mask to continents
 
 plot(strong_rast)
 
-strong_df <- strong_rast %>%
-  as.data.frame()
 
 #where we work
-www <- st_read(here("www", "WWW_intersect.shp")) %>% 
+www <- read_sf(here("www", "www_intersect.shp")) %>% 
   clean_names() %>% 
   st_transform(., crs = st_crs(continents)) #change to correct crs
 
@@ -56,52 +60,47 @@ www_rast <-mask(www_rast, continents)
 
 plot(www_rast)
 
-
-
-
-```
-
-Rasterize sf files
-```{r}
-
+www_df <- www_rast %>% #create df
+  as.data.frame()
 
 
 ```
+
 
 Area
 ```{r}
 
-  mutate(area = st_area(geometry)) 
-  X %>% mutate(area = st_area(geometry))
-
 #total area
 
 #Strongholds
-# strong_area <- strongholds %>% 
-#   group_by(region) %>% 
-#   summarise(sum_area_k2 = sum(shape_area^2))
-
 strong_area <- strongholds %>% 
-  group_by(continent) %>% 
-  summarise(sum_area_k2 = sum(sqkm))
+  mutate(area = st_area(geometry)/1e+6) %>%  #convert sq meters to sq km
 
-#% of area of the globe
+strong_tot_area <- strong_area %>%
+  select() %>% 
+  mutate()
 
-#WWW - green polygons
-# www_area <- www %>% 
-#   group_by(region) %>% 
-#   summarise(sum_area_k2 = sum(shape_area^2)) %>% 
-#   mutate(percent = www_area$sum_area_k2/
-
+#WWW
 www_area <- www %>% 
-  group_by(continent) %>% 
-  summarise(sum_area_k2 = sum(sqkm))
+  mutate(area = st_area(geometry)/1e+6) 
+
+
 
 ###########
 
-#terrestrial area
+#terrestrial area and % of total terrestrial area, Earth's surface: 510,000,000 km2
 
-#%of total terrestrial area
+strong_area_terr <- strong_area %>% 
+  group_by(continent) %>% 
+  summarise(sum_area_k2 = sum(sqkm)) %>% 
+  mutate(sum_total = sum(sum_area_k2)) %>% 
+  mutate(sum_perc = sum_total/510000000)
+
+www_area_cont <- www_area %>% 
+  group_by(continent) %>% 
+  summarise(sum_area_k2 = sum(sqkm)) %>% 
+  mutate(sum_total = sum(sum_area_k2)) %>% 
+  mutate(sum_perc = sum_total/510000000)
 
 ##########
 
